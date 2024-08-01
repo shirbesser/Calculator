@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון תמחור הרצאה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            display: grid;
+            gap: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>מחשבון תמחור הרצאה</h1>
+        <form id="pricingForm">
+            <label for="lectureTime">זמן ההרצאה (שעות):</label>
+            <input type="number" id="lectureTime" required min="0" step="0.5">
+            
+            <label for="prepTime">זמן הכנה (שעות):</label>
+            <input type="number" id="prepTime" required min="0" step="0.5">
+            
+            <label for="experience">ניסיון וותק (שנים):</label>
+            <input type="number" id="experience" required min="0">
+            
+            <label for="travelDistance">מרחק נסיעה (ק"מ):</label>
+            <input type="number" id="travelDistance" required min="0">
+            
+            <label for="travelTime">זמן נסיעה (שעות):</label>
+            <input type="number" id="travelTime" required min="0" step="0.5">
+            
+            <label for="personalEquipment">ציוד אישי:</label>
+            <select id="personalEquipment">
+                <option value="0">לא</option>
+                <option value="1">כן</option>
+            </select>
+            
+            <label for="materials">חומרים נלווים:</label>
+            <select id="materials">
+                <option value="0">לא</option>
+                <option value="1">כן</option>
+            </select>
+            
+            <label for="location">מקום:</label>
+            <select id="location">
+                <option value="מתנס">מתנ"ס</option>
+                <option value="חברה פרטית">חברה פרטית</option>
+                <option value="עמותה">עמותה</option>
+            </select>
+            
+            <label for="city">האם ההרצאה ביבנה?</label>
+            <select id="city">
+                <option value="לא">לא</option>
+                <option value="כן">כן</option>
+            </select>
+            
+            <button type="submit">חשב מחיר</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('pricingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // קבלת הערכים מהטופס
+            const lectureTime = parseFloat(document.getElementById('lectureTime').value);
+            const prepTime = parseFloat(document.getElementById('prepTime').value);
+            const experience = parseInt(document.getElementById('experience').value);
+            const travelDistance = parseFloat(document.getElementById('travelDistance').value);
+            const travelTime = parseFloat(document.getElementById('travelTime').value);
+            const personalEquipment = parseInt(document.getElementById('personalEquipment').value);
+            const materials = parseInt(document.getElementById('materials').value);
+            const location = document.getElementById('location').value;
+            const city = document.getElementById('city').value;
+            
+            // חישוב המחיר (זה רק דוגמה, יש להתאים לפי הלוגיקה הרצויה)
+            let minPrice = 0;
+            let maxPrice = 0;
+            
+            // זמן הרצאה
+            minPrice += lectureTime * 500;
+            maxPrice += lectureTime * 1000;
+            
+            // זמן הכנה (רק אם מעל שעתיים)
+            if (prepTime > 2) {
+                minPrice += 200;
+                maxPrice += 500;
+            }
+            
+            // ניסיון וותק
+            minPrice += experience * 100;
+            maxPrice += experience * 300;
+            
+            // מרחק ונסיעה (רק אם לא ביבנה)
+            if (city === 'לא') {
+                minPrice += travelDistance * 3 + travelTime * 100;
+                maxPrice += travelDistance * 5 + travelTime * 200;
+            }
+            
+            // ציוד אישי וחומרים
+            minPrice += (personalEquipment + materials) * 50;
+            maxPrice += (personalEquipment + materials) * 100;
+            
+            // מקום
+            if (location === 'מתנס') {
+                minPrice += 500;
+                maxPrice += 800;
+            } else if (location === 'חברה פרטית') {
+                minPrice += 800;
+                maxPrice += 1200;
+            } else if (location === 'עמותה') {
+                minPrice += 600;
+                maxPrice += 1000;
+            }
+            
+            // הצגת התוצאה
+            document.getElementById('result').innerHTML = `
+                <h2>תוצאות החישוב:</h2>
+                <p>מחיר מינימום: ${minPrice} ש"ח</p>
+                <p>מחיר מקסימום: ${maxPrice} ש"ח</p>
+            `;
+        });
+    </script>
+</body>
+</html>
