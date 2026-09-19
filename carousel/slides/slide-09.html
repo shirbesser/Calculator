@@ -101,8 +101,8 @@ p { overflow-wrap: normal; word-break: keep-all; hyphens: none; text-wrap: prett
   color: var(--red);
   font-size: 62px;
   line-height: 1.22;
-  transform: rotate(-3.5deg);
-  transform-origin: right bottom;
+  transform: rotate(var(--tilt, -3.5deg));
+  transform-origin: var(--tilt-origin, right bottom);
   display: inline-block;
   max-width: 100%;
 }
@@ -140,17 +140,69 @@ p { overflow-wrap: normal; word-break: keep-all; hyphens: none; text-wrap: prett
   filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.12));
   z-index: 1;
 }
+
+/* ---- per-slide composition variants ---- */
+.item .stage { position: absolute; }
+.wm {
+  position: absolute; left: -10px; bottom: 330px;
+  font-size: 400px; font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+  color: rgba(43, 43, 43, 0.055);
+  direction: ltr; z-index: 0; pointer-events: none;
+}
+
+/* intro: giant numeral */
+.giant-number .seven { line-height: 0.9; }
+.giant-number .seven .n { font-size: 560px; font-weight: 700; letter-spacing: -0.04em; }
+.giant-number .seven .w { font-size: 150px; font-weight: 700; letter-spacing: -0.01em; }
+.giant-number .sub { font-size: 60px; font-weight: 300; line-height: 1.3; margin-top: 56px; }
+
+/* bottom-heavy: everything hugs the lower edge, air on top */
+.bottom .center { justify-content: flex-end; }
+.bottom .title { margin-bottom: 48px; }
+.bottom .foot { min-height: 0; margin-top: 56px; }
+
+/* step: the second body line steps in */
+.step .body p + p { margin-top: 28px; padding-right: 150px; }
+
+/* stack: repetition that grows */
+.stack .body p { line-height: 1.3; }
+.stack .body p + p { margin-top: 10px; }
+.stack .body p:nth-child(1) { font-size: 50px; font-weight: 300; }
+.stack .body p:nth-child(2) { font-size: 64px; font-weight: 400; }
+.stack .body p:nth-child(3) { font-size: 80px; font-weight: 500; }
+
+/* giant-hand: one-word punch, huge, pushed to the left */
+.giant-hand .center { justify-content: flex-start; padding-top: 20px; }
+.giant-hand .foot { justify-content: flex-end; min-height: 0; padding-bottom: 80px; }
+.giant-hand .hand { font-size: 190px; line-height: 1; }
+
+/* hero: quiet list, loud last line */
+.hero .body p:first-child { font-size: 48px; font-weight: 300; width: 78%; line-height: 1.4; }
+.hero .body p + p { font-size: 96px; font-weight: 700; line-height: 1.1; margin-top: 44px; }
+.hero .title { margin-bottom: 48px; }
+
+/* cascade: the metrics tumble down in different sizes */
+.cascade .title { margin-bottom: 40px; }
+.cascade .metrics p { line-height: 1.15; margin: 0; }
+.cascade .body .closing { font-size: 60px; font-weight: 500; line-height: 1.3; margin-top: 36px; }
+.cascade .foot { min-height: 0; margin-top: 30px; }
 </style>
 </head>
-<body class="item">
+<body class="item cascade" style="--tilt:4deg;--tilt-origin:right top">
   <div class="counter">9/10</div>
   <div class="stage">
       <div class="center">
-        <p class="title t-l"  data-check>7. ועל זה שהפכת בעלות עסקים לאנליסטיות.</p>
-        <div class="body"><p class="t-m"  data-check>הוק. זמן צפייה. שמירות. שיתופים. נטישה. שלוש שניות ראשונות. שעות פעילות.</p>
-<p class="t-m5"  data-check>בסך הכול רציתי למכור קורס.</p></div>
+        <p class="title t-l" style="font-size:80px" data-check>7. ועל זה שהפכת בעלות עסקים לאנליסטיות.</p>
+        <div class="body"><div class="metrics"><p style="font-size:46px;font-weight:300" data-check>הוק.</p>
+<p style="font-size:64px;font-weight:500" data-check>זמן צפייה.</p>
+<p style="font-size:40px;font-weight:300" data-check>שמירות.</p>
+<p style="font-size:54px;font-weight:400" data-check>שיתופים.</p>
+<p style="font-size:72px;font-weight:700" data-check>נטישה.</p>
+<p style="font-size:38px;font-weight:300" data-check>שלוש שניות ראשונות.</p>
+<p style="font-size:58px;font-weight:400" data-check>שעות פעילות.</p></div><p class="closing" data-check>בסך הכול רציתי למכור קורס.</p></div>
       </div>
-      <div class="foot hand-wrap"><p class="hand" data-check>איך הגעתי לתואר בסטטיסטיקה?</p></div></div>
+      <div class="foot hand-wrap"><p class="hand" data-check>איך הגעתי לתואר בסטטיסטיקה?</p></div>
+      </div>
   <div class="noise"></div>
 </body>
 </html>

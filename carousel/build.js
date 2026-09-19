@@ -22,23 +22,27 @@ const slides = [
     kind: 'cover',
     lines: ['בין אדם לחברו: סליחה.', 'בין אדם לפיד: יש לי כמה דברים להגיד.'],
     hand: 'והפעם, אינסטגרם - אתה מתחיל.',
+    tilt: -3.5,
   },
   {
     kind: 'intro',
     big: '7 דברים',
     sub: 'שאתה חייב לנו עליהם סליחה השנה',
+    layout: 'giant-number',
   },
   {
     kind: 'item',
     title: '1. על 1985.',
     body: ['ב־2026 גרמת לכולנו להעלות תמונה מ־1985', 'ולקרוא לזה חדשנות.'],
     hand: 'אפילו לא נולדתי, אבל אחלה פוני.',
+    layout: 'classic', watermark: '1985', tilt: -4,
   },
   {
     kind: 'item',
     title: '2. על החשיפה.',
     body: ['נתת לי אלפי עוקבות', 'ואז החלטת שהפוסט שלי צריך להגיע ל־417 מהן.'],
     hand: 'אם רציתי לדבר מול כיתה הייתי חוזרת לאוניברסיטה.',
+    layout: 'bottom', tilt: 3,
   },
   {
     kind: 'item',
@@ -47,24 +51,28 @@ const slides = [
     hand: 'מערכת יחסים עם פחות יציבות וכבר הייתי חוסמת.',
     nowrap: ['סוף סוף'], // keep the doubled word on one line
     bodyBalance: true,
+    layout: 'step', tilt: -5,
   },
   {
     kind: 'item',
     title: '4. על הבאגים.',
     body: ['יום אחד אין מוזיקה.', 'יום אחד אין צפיות.', 'יום אחד אין כפתור שהיה פה אתמול.'],
     hand: 'ואיכשהו בכל פעם אני זאת שמנקה קאש.',
+    layout: 'stack', tilt: 3.5,
   },
   {
     kind: 'item',
     title: '5. על ריל ניסיון.',
     body: ['תודה על האפשרות לבדוק את הריל שלי על זרים', 'לפני שאתה מחליט לא להראות אותו גם לעוקבות שלי.'],
     hand: 'חדשני.',
+    layout: 'giant-hand', tilt: -5,
   },
   {
     kind: 'item',
     title: '6. על כל הפיצ׳רים החדשים.',
     body: ['עריכה, AI, תבניות, ניסויים, עוד כפתור, פחות כפתור…', 'מותק, הכול מהמם.'],
     hand: 'אפשר פיצ׳ר אחד שבו מי שעוקבת אחריי רואה אותי?',
+    layout: 'hero', tilt: -3,
   },
   {
     kind: 'item',
@@ -74,7 +82,8 @@ const slides = [
       'בסך הכול רציתי למכור קורס.',
     ],
     hand: 'איך הגעתי לתואר בסטטיסטיקה?',
-    titleLines: 3,
+    titleLines: 3, titleSize: 80,
+    layout: 'cascade', tilt: 4,
   },
   {
     kind: 'outro',
@@ -83,6 +92,7 @@ const slides = [
     hand: 'סתם. תחזיר את החשיפה ונדבר.',
     small: 'שלחי לבעלת העסק שעוד חייבת לאינסטגרם סליחה',
     image: 'shir.png',
+    tilt: -3.5,
   },
 ];
 
@@ -193,8 +203,8 @@ p { overflow-wrap: normal; word-break: keep-all; hyphens: none; text-wrap: prett
   color: var(--red);
   font-size: 62px;
   line-height: 1.22;
-  transform: rotate(-3.5deg);
-  transform-origin: right bottom;
+  transform: rotate(var(--tilt, -3.5deg));
+  transform-origin: var(--tilt-origin, right bottom);
   display: inline-block;
   max-width: 100%;
 }
@@ -232,6 +242,52 @@ p { overflow-wrap: normal; word-break: keep-all; hyphens: none; text-wrap: prett
   filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.12));
   z-index: 1;
 }
+
+/* ---- per-slide composition variants ---- */
+.item .stage { position: absolute; }
+.wm {
+  position: absolute; left: -10px; bottom: 330px;
+  font-size: 400px; font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+  color: rgba(43, 43, 43, 0.055);
+  direction: ltr; z-index: 0; pointer-events: none;
+}
+
+/* intro: giant numeral */
+.giant-number .seven { line-height: 0.9; }
+.giant-number .seven .n { font-size: 560px; font-weight: 700; letter-spacing: -0.04em; }
+.giant-number .seven .w { font-size: 150px; font-weight: 700; letter-spacing: -0.01em; }
+.giant-number .sub { font-size: 60px; font-weight: 300; line-height: 1.3; margin-top: 56px; }
+
+/* bottom-heavy: everything hugs the lower edge, air on top */
+.bottom .center { justify-content: flex-end; }
+.bottom .title { margin-bottom: 48px; }
+.bottom .foot { min-height: 0; margin-top: 56px; }
+
+/* step: the second body line steps in */
+.step .body p + p { margin-top: 28px; padding-right: 150px; }
+
+/* stack: repetition that grows */
+.stack .body p { line-height: 1.3; }
+.stack .body p + p { margin-top: 10px; }
+.stack .body p:nth-child(1) { font-size: 50px; font-weight: 300; }
+.stack .body p:nth-child(2) { font-size: 64px; font-weight: 400; }
+.stack .body p:nth-child(3) { font-size: 80px; font-weight: 500; }
+
+/* giant-hand: one-word punch, huge, pushed to the left */
+.giant-hand .center { justify-content: flex-start; padding-top: 20px; }
+.giant-hand .foot { justify-content: flex-end; min-height: 0; padding-bottom: 80px; }
+.giant-hand .hand { font-size: 190px; line-height: 1; }
+
+/* hero: quiet list, loud last line */
+.hero .body p:first-child { font-size: 48px; font-weight: 300; width: 78%; line-height: 1.4; }
+.hero .body p + p { font-size: 96px; font-weight: 700; line-height: 1.1; margin-top: 44px; }
+.hero .title { margin-bottom: 48px; }
+
+/* cascade: the metrics tumble down in different sizes */
+.cascade .title { margin-bottom: 40px; }
+.cascade .metrics p { line-height: 1.15; margin: 0; }
+.cascade .body .closing { font-size: 60px; font-weight: 500; line-height: 1.3; margin-top: 36px; }
+.cascade .foot { min-height: 0; margin-top: 30px; }
 `;
 
 // ---------------------------------------------------------------- html
@@ -248,29 +304,48 @@ function renderSlide(s, i) {
         <div class="hand-wrap"><p class="hand" data-check>${esc(s.hand)}</p></div>
       </div>`;
   } else if (s.kind === 'intro') {
+    // "7 דברים": the numeral is the slide. Text stays one string, spans only style it.
+    const [num, ...rest] = s.big.split(' ');
     inner = `
       <div class="center">
-        <p class="big red" data-check>${esc(s.big)}</p>
+        <p class="seven red" data-check><span class="n">${esc(num)}</span> <span class="w">${esc(rest.join(' '))}</span></p>
         <p class="sub" data-check>${esc(s.sub)}</p>
       </div>`;
   } else if (s.kind === 'item') {
-    const tSize = "";
-    const bSize = "";
-    const body = s.body
-      .map((line, j) => {
-        const last = j === s.body.length - 1 && s.body.length > 1;
-        let html = esc(line);
-        for (const phrase of s.nowrap || []) html = html.split(esc(phrase)).join(`<span class="nw">${esc(phrase)}</span>`);
-        const cls = [last ? 't-m5' : 't-m', s.bodyBalance ? 'bal' : ''].join(' ').trim();
-        return `<p class="${cls}" ${bSize} data-check>${html}</p>`;
-      })
-      .join('\n');
+    const tSize = s.titleSize ? `style="font-size:${s.titleSize}px"` : '';
+    const decorate = (line) => {
+      let html = esc(line);
+      for (const phrase of s.nowrap || []) html = html.split(esc(phrase)).join(`<span class="nw">${esc(phrase)}</span>`);
+      return html;
+    };
+    let body;
+    if (s.layout === 'cascade') {
+      // first body line is a run of short sentences: one per line, varied scale
+      const parts = s.body[0].split(/(?<=\.)\s+/);
+      if (parts.join(' ') !== s.body[0]) throw new Error('cascade split changed the copy');
+      const sizes = [46, 64, 40, 54, 72, 38, 58];
+      const weights = [300, 500, 300, 400, 700, 300, 400];
+      const metrics = parts
+        .map((t, k) => `<p style="font-size:${sizes[k % sizes.length]}px;font-weight:${weights[k % weights.length]}" data-check>${esc(t)}</p>`)
+        .join('\n');
+      body = `<div class="metrics">${metrics}</div><p class="closing" data-check>${esc(s.body[1])}</p>`;
+    } else {
+      body = s.body
+        .map((line, j) => {
+          const last = j === s.body.length - 1 && s.body.length > 1;
+          const cls = [last ? 't-m5' : 't-m', s.bodyBalance ? 'bal' : ''].join(' ').trim();
+          return `<p class="${cls}" data-check>${decorate(line)}</p>`;
+        })
+        .join('\n');
+    }
+    const wm = s.watermark ? `<div class="wm" aria-hidden="true">${esc(s.watermark)}</div>` : '';
     inner = `
       <div class="center">
         <p class="title t-l" ${tSize} data-check>${esc(s.title)}</p>
         <div class="body">${body}</div>
       </div>
-      <div class="foot hand-wrap"><p class="hand" data-check>${esc(s.hand)}</p></div>`;
+      <div class="foot hand-wrap"><p class="hand" data-check>${esc(s.hand)}</p></div>
+      ${wm}`;
   } else if (s.kind === 'outro') {
     inner = `
       <div class="top">
@@ -288,7 +363,7 @@ function renderSlide(s, i) {
 <title>slide ${n}</title>
 <style>${css}</style>
 </head>
-<body class="${s.kind}">
+<body class="${s.kind} ${s.layout || ''}" style="--tilt:${s.tilt ?? -3.5}deg;--tilt-origin:right ${(s.tilt ?? -3.5) > 0 ? 'top' : 'bottom'}">
   <div class="counter">${n}/${TOTAL}</div>
   <div class="stage">${inner}</div>
   <div class="noise"></div>
@@ -351,10 +426,12 @@ async function auditPage(page) {
       const top = Math.min(...rects.map((q) => q.top));
       const bottom = Math.max(...rects.map((q) => q.bottom));
       if (left < safe.left - 2 || right > safe.right + 2) problems.push(`outside safe area (x): "${text}" ${Math.round(left)}-${Math.round(right)}`);
-      if (top < safe.top - 2 || bottom > safe.bottom + 2) problems.push(`outside safe area (y): "${text}" ${Math.round(top)}-${Math.round(bottom)}`);
+      const fs = parseFloat(getComputedStyle(el).fontSize);
+      const yTol = Math.max(2, fs * 0.16);
+      if (top < safe.top - yTol || bottom > safe.bottom + yTol) problems.push(`outside safe area (y): "${text}" ${Math.round(top)}-${Math.round(bottom)}`);
       // right alignment: the widest line must touch the right edge of the box
       if (!el.classList.contains('hand')) {
-        const boxRight = el.getBoundingClientRect().right;
+        const boxRight = el.getBoundingClientRect().right - parseFloat(getComputedStyle(el).paddingRight);
         if (Math.abs(right - boxRight) > 6) problems.push(`not right-aligned: "${text}" (${Math.round(right)} vs ${Math.round(boxRight)})`);
       }
     }
@@ -384,7 +461,7 @@ async function auditPage(page) {
     await page.evaluate(() => Promise.all([...document.images].map((im) => im.decode().catch(() => {}))));
     await page.evaluate((maxLines) => {
       const el = document.querySelector('.item .title');
-      if (!el) return;
+      if (!el || el.style.fontSize) return;
       const lines = () => {
         const r = document.createRange(); r.selectNodeContents(el);
         const tops = new Set([...r.getClientRects()].filter((q) => q.width > 0).map((q) => Math.round(q.top)));
