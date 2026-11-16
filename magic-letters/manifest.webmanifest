@@ -1,0 +1,26 @@
+{
+  "name": "אותיות של קסם — משחקי אותיות וקריאה",
+  "short_name": "אותיות של קסם",
+  "description": "משחקים בעברית לילדי הגן מגיל ארבע. כל ילד בקצב שלו, התקדמות במכשיר בלבד.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f6ff",
+  "theme_color": "#f8f6ff",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:300px;height:120px;overflow:hidden}</style></head><body><div id="art" data-w="300" data-h="120" data-scale="2.5" data-q="86"></div><script src="_kit.js"></script><script>
+const W=300,H=120;let s=svgOpen(W,H);
+s+=`<linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8dc"/><stop offset=".55" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f7cf72"/></linearGradient>
+<linearGradient id="rt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset="1" stop-color="#eab554"/></linearGradient>`;
+s+=`<g filter="url(#fDrop)">
+<path d="M14 52 L58 46 L58 100 L14 106 L30 79Z" fill="url(#rt)"/>
+<path d="M286 52 L242 46 L242 100 L286 106 L270 79Z" fill="url(#rt)"/>
+<path d="M58 100 L74 92 L58 82Z" fill="#c9903a"/><path d="M242 100 L226 92 L242 82Z" fill="#c9903a"/>
+<path d="M50 30 Q150 6 250 30 L250 86 Q150 62 50 86Z" fill="url(#rb)"/>
+<path d="M54 34 Q150 11 246 34" stroke="#fff" stroke-width="3" fill="none" opacity=".8"/>
+<path d="M54 82 Q150 59 246 82" stroke="#e2ae55" stroke-width="2" fill="none" opacity=".6"/>
+</g>`;
+s+='</svg>';mount(s);
+</script></body></html>

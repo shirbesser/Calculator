@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:360px;height:156px;overflow:hidden}</style></head><body><div id="art" data-w="360" data-h="156" data-scale="2.4" data-q="82"></div><script src="_kit.js"></script><script>
+setSeed(32);const W=360,H=156;let s=svgOpen(W,H);
+s+=`<linearGradient id="ws" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe6fd"/><stop offset=".6" stop-color="#d9d0fa"/><stop offset="1" stop-color="#cdb8f3"/></linearGradient>`;
+s+=`<rect width="${W}" height="${H}" fill="url(#ws)"/>`;
+s+=`<circle cx="120" cy="56" r="120" fill="url(#gGlow)" opacity=".7"/>`;
+s+=cloud(40,36,.42,'gCloudBlue',.95);s+=cloud(236,22,.34,'gCloudBlue',.85);s+=cloud(330,70,.4,'gCloudBlue',.9);
+s+=`<path d="M0 112 Q 70 86 150 104 Q 230 120 300 96 Q 340 86 360 92 L360 156 L0 156Z" fill="url(#gHillLilac)"/>`;
+s+=bush(18,108,.55,true);s+=bush(300,100,.6,true);
+s+=`<path d="M0 130 Q 90 108 180 126 Q 270 142 360 118 L360 156 L0 156Z" fill="url(#gHillNear)"/>`;
+s+=`<path d="M0 130 Q 90 108 180 126 Q 270 142 360 118" stroke="#d8ffb8" stroke-width="2.2" fill="none" opacity=".8"/>`;
+for(let i=0;i<20;i++){s+=tuft(6+i*18+rnd()*6,138+rnd()*16,.42+rnd()*.3,rnd()>.5?'#4fa64e':'#6cc05a')}
+s+=pic('1f338',14,126,22);s+=pic('1f33c',196,134,18);s+=pic('1f337',172,120,20);s+=pic('1f338',300,134,18);
+for(const [x,y,r] of [[170,30,5],[90,20,4],[20,80,4],[330,30,4]]) s+=sparkle(x,y,r,'#fffbe6',true);
+s+=dust(0,0,W,110,24,'#fff6c0',1.5);
+
+s+='</svg>';mount(s);
+</script></body></html>

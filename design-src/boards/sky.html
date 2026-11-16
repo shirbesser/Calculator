@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:430px;height:932px;overflow:hidden}</style></head>
+<body><div id="art" data-w="430" data-h="932" data-scale="2" data-q="80"></div>
+<script src="_kit.js"></script>
+<script>
+setSeed(11);
+const W=430,H=932;
+let s=svgOpen(W,H);
+s+=`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0" stop-color="#c7aef3"/><stop offset=".18" stop-color="#dcc6f7"/>
+ <stop offset=".42" stop-color="#f2def6"/><stop offset=".75" stop-color="#fbe7f1"/><stop offset="1" stop-color="#f9e2ef"/></linearGradient>`;
+s+=`<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+// soft sun glows
+s+=`<circle cx="215" cy="150" r="230" fill="url(#gGlowWhite)" opacity=".55"/>`;
+s+=`<circle cx="330" cy="40" r="140" fill="url(#gGlow)" opacity=".35"/>`;
+s+=`<circle cx="60" cy="520" r="200" fill="url(#gGlowWhite)" opacity=".35"/>`;
+// faint distant lilac cloud layer
+s+=cloudBank(-40,250,520,1,'gCloudLilac',9,.5,true,140);
+// clouds top
+s+=cloud(40,110,.9,'gCloudPink');
+s+=cloud(400,70,.85,'gCloud');
+s+=cloud(330,190,.55,'gCloudPink',.85);
+s+=cloud(110,30,.5,'gCloud',.8);
+// side clouds mid
+s+=cloud(-10,470,.95,'gCloudPink',.9);
+s+=cloud(450,560,1.05,'gCloudPink',.9);
+s+=cloud(420,380,.5,'gCloud',.7);
+// bottom marshmallow bank
+s+=cloudBank(-60,800,560,1.05,'gCloudPink',9);
+s+=cloud(70,830,1.1,'gCloud');
+s+=cloud(360,850,1.2,'gCloudPink');
+// sparkles
+const sp=[[70,60,7],[180,40,5],[300,120,8],[380,250,6],[30,300,5],[400,430,7],[25,640,6],[210,330,4],[150,200,5],[350,700,5],[100,760,6],[300,620,4]];
+for(const [x,y,r] of sp) s+=sparkle(x,y,r,'#fffbe8',true,.9);
+s+=dust(0,0,W,H,90,'#ffffff',1.6);
+s+=dust(0,0,W,500,30,'#fff2a8',1.8);
+s+='</svg>';
+mount(s);
+</script></body></html>

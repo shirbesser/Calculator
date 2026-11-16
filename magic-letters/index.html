@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d9c4f6">
+<meta name="color-scheme" content="light">
+<meta name="description" content="אותיות של קסם — 24 שלבים לילדי גן, מגיל 4 ועד ראשית קריאה">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="preload" href="./fonts/fredoka-hebrew-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/rubik-hebrew-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./art/sky.webp" as="image">
+<link rel="stylesheet" href="./luli.css?v=13">
+<title>אותיות של קסם | משחקי אותיות וקריאה</title>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="app-shell" id="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" opacity=".85"/></svg></div><span>אותיות של קסם</span></div>
+    <div class="header-actions"><button class="icon-button" data-nav="parent" aria-label="אזור ההורים" title="אזור ההורים"></button><button class="icon-button" id="sound-toggle" aria-label="הפעלה או כיבוי של קול" title="קול"></button></div>
+  </header>
+  <main id="screen" class="screen" tabindex="-1"></main>
+  <footer class="app-credit" aria-label="קרדיט ליוצרת">נוצר באהבה על ידי <a href="https://shirbesser.com" target="_blank" rel="noopener noreferrer" aria-label="לאתר של שיר בסר (ייפתח בחלון חדש)">שיר בסר</a></footer>
+  <nav class="bottom-nav" aria-label="ניווט ראשי">
+    <button class="nav-button" data-nav="home" type="button"></button>
+    <button class="nav-button" data-nav="games" type="button"></button>
+    <button class="nav-button" data-nav="profiles" type="button"></button>
+  </nav>
+</div>
+<script src="./recorded-manifest.js?v=2"></script>
+<script src="./app.js?v=13" defer></script>
+</body>
+</html>

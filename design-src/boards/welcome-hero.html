@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:380px;height:370px;overflow:hidden}</style></head>
+<body><div id="art" data-w="380" data-h="370" data-scale="2.5" data-q="84"></div>
+<script src="_kit.js"></script>
+<script>
+setSeed(5);
+const W=380,H=370;
+let s=svgOpen(W,H);
+// back glow
+s+=`<circle cx="190" cy="170" r="170" fill="url(#gGlowWhite)" opacity=".75"/>`;
+s+=`<circle cx="190" cy="250" r="120" fill="url(#gGlow)" opacity=".8"/>`;
+// golden swirl trail behind Luli
+s+=goldTrail('M20 300 C -10 200 60 112 150 100 C 240 88 300 110 350 50',8,[0,300,360,40]);
+s+=dust(20,60,340,220,70,'#fff2a6',2.2);
+// soft clouds under the book
+s+=cloud(60,330,.8,'gCloudPink',.95);
+s+=cloud(320,334,.85,'gCloudPink',.95);
+// leaves behind book
+s+=leaf(70,282,1.1,-160,1);s+=leaf(84,262,.95,-135,1);s+=leaf(110,250,.75,-110,1);
+s+=leaf(310,282,1.1,-20,1);s+=leaf(296,262,.95,-45,1);s+=leaf(270,250,.75,-70,1);
+// book
+s+=magicBook(190,318,.95,{glow:.7});
+// Luli standing on the pages
+s+=`<ellipse cx="190" cy="262" rx="62" ry="10" fill="#8a5bc9" opacity=".25" filter="url(#fBlur4)"/>`;
+// Luli is a separate animated layer in the app (left 18.95%, top 9.19%, width 62.1%)
+// floating star + sparkles
+s+=pic('2b50',300,92,62,'transform="rotate(14 331 123)"');
+s+=pic('2b50',36,128,34,'opacity=".95" transform="rotate(-12 53 145)"');
+for(const [x,y,r] of [[60,80,8],[330,40,7],[350,200,6],[28,200,6],[250,30,5],[120,40,5]]) s+=sparkle(x,y,r,'#fffbe6',true);
+s+='</svg>';
+mount(s);
+</script></body></html>

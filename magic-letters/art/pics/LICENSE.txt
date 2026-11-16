@@ -1,0 +1,2 @@
+3D pictures: Microsoft Fluent Emoji (3D style), MIT License, Copyright (c) Microsoft Corporation.
+Packaged via the npm package @lobehub/fluent-emoji-3d. Files are named by Unicode code point.

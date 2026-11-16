@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:360px;height:270px;overflow:hidden}</style></head><body><div id="art" data-w="360" data-h="270" data-scale="2.5" data-q="84"></div><script src="_kit.js"></script><script>
+setSeed(21);const W=360,H=270;let s=svgOpen(W,H);
+s+=`<linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6dcf3"/><stop offset=".55" stop-color="#fbe9f3"/><stop offset="1" stop-color="#fff3ea"/></linearGradient>`;
+s+=`<rect width="${W}" height="${H}" fill="url(#hsky)"/>`;
+// sun rays from behind Luli
+let rays='';for(let i=0;i<18;i++){const a=(i/18)*Math.PI*2;rays+=`<path d="M110 150 L${110+Math.cos(a)*420} ${150+Math.sin(a)*420} L${110+Math.cos(a+.09)*420} ${150+Math.sin(a+.09)*420}Z" fill="#fff" opacity=".22"/>`}
+s+=`<g filter="url(#fBlur4)">${rays}</g>`;
+s+=`<circle cx="110" cy="150" r="130" fill="url(#gGlow)" opacity=".85"/>`;
+// rainbow
+const rc=['#ff9ab5','#ffc48a','#ffe98a','#a8e6a1','#9fd3ff','#c3a6ff'];
+s+=`<g opacity=".8" filter="url(#fSoft)">`+rc.map((c,i)=>`<path d="M140 ${140} A ${96-i*9} ${96-i*9} 0 0 1 ${140+2*(96-i*9)} 140" stroke="${c}" stroke-width="9.5" fill="none"/>`).join('')+`</g>`;
+s+=cloud(318,140,.5,'gCloudLilac');s+=cloud(150,148,.45,'gCloud');
+s+=cloud(40,40,.42,'gCloud',.9);s+=cloud(300,30,.38,'gCloudPink',.9);
+// hills
+s+=`<path d="M0 214 Q 90 180 190 206 Q 280 226 360 196 L360 270 L0 270Z" fill="url(#gHillFar)"/>`;
+s+=bush(330,206,.75,true);s+=bush(16,214,.7,true);
+s+=`<path d="M0 238 Q 120 206 220 232 Q 300 250 360 230 L360 270 L0 270Z" fill="url(#gHillNear)"/>`;
+s+=`<path d="M0 238 Q 120 206 220 232 Q 300 250 360 230" stroke="#d8ffb8" stroke-width="2.5" fill="none" opacity=".8"/>`;
+for(let i=0;i<18;i++){s+=tuft(8+i*20+rnd()*8,248+rnd()*20,.5+rnd()*.4,rnd()>.5?'#4fa64e':'#6cc05a')}
+s+=pic('1f338',206,226,26);s+=pic('1f33c',240,240,20);s+=pic('1f337',318,224,24);s+=pic('1f338',10,236,22);
+for(const [x,y,r] of [[200,40,6],[330,90,5],[30,120,5],[250,180,4]]) s+=sparkle(x,y,r,'#fffbe6',true);
+s+=dust(0,0,W,200,30,'#ffffff',1.4);
+s+='</svg>';mount(s);
+</script></body></html>

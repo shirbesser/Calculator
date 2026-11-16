@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:340px;height:200px;overflow:hidden}</style></head><body><div id="art" data-w="340" data-h="200" data-scale="2.5" data-q="86"></div><script src="_kit.js"></script><script>
+setSeed(3);const W=340,H=200;let s=svgOpen(W,H);
+s+=`<circle cx="170" cy="100" r="150" fill="url(#gGlowWhite)" opacity=".7"/>`;
+s+=`<g transform="translate(0 6)">`+cloudShape([[60,104,46],[100,70,58],[160,52,66],[222,64,58],[270,96,48],[300,124,30],[36,128,28],[130,110,50],[200,110,50]],[24,104,300,62],'gCloudWhite',1)+`</g>`;
+for(const [x,y,r] of [[22,40,8],[318,30,9],[300,182,6],[40,184,5],[180,10,6]]) s+=sparkle(x,y,r,'#fffbe6',true);
+s+='</svg>';mount(s);
+</script></body></html>

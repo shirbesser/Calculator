@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}#art{width:430px;height:200px;overflow:hidden}</style></head><body><div id="art" data-w="430" data-h="200" data-scale="2" data-q="82"></div><script src="_kit.js"></script><script>
+setSeed(9);const W=430,H=200;let s=svgOpen(W,H);
+s+=`<path d="M0 120 Q 80 80 170 108 Q 260 132 330 96 Q 390 70 430 92 L430 200 L0 200Z" fill="url(#gHillFar)" opacity=".9"/>`;
+s+=`<path d="M0 120 Q 80 80 170 108 Q 260 132 330 96 Q 390 70 430 92" stroke="#e4ffcf" stroke-width="3" fill="none" opacity=".8"/>`;
+s+=bush(40,128,1,true);s+=bush(392,112,1.1,true);s+=bush(250,138,.7,true);
+s+=`<path d="M0 150 Q 110 118 220 146 Q 320 170 430 136 L430 200 L0 200Z" fill="url(#gHillNear)"/>`;
+s+=`<path d="M0 150 Q 110 118 220 146 Q 320 170 430 136" stroke="#d8ffb8" stroke-width="3" fill="none" opacity=".85"/>`;
+for(let i=0;i<26;i++){s+=tuft(10+i*16.5+rnd()*8,158+rnd()*30,.6+rnd()*.5,rnd()>.5?'#4fa64e':'#6cc05a')}
+s+=bush(-6,170,1.1);s+=bush(440,168,1.2);
+s+=pic('1f344',300,112,54,'style="filter:hue-rotate(330deg) saturate(.55) brightness(1.18)"');
+s+=pic('1f344',336,140,32,'style="filter:hue-rotate(330deg) saturate(.55) brightness(1.18)"');
+s+=pic('1f338',70,140,40);s+=pic('1f33c',112,160,30);s+=pic('1f338',380,150,36);s+=pic('1f337',30,150,34);s+=pic('1f33c',200,170,26);s+=pic('1f338',250,166,30);
+s+=sparkle(160,120,6,'#fffbe6',true);s+=sparkle(280,100,5,'#fffbe6',true);
+s+='</svg>';mount(s);
+</script></body></html>
