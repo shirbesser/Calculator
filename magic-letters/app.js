@@ -247,29 +247,27 @@ const retryLines=[
  {display:'עוד ניסיון קטן, אפשר להצליח!',spoken:'עוֹד נִסָּיוֹן קָטָן, אֶפְשָׁר לְהַצְלִיחַ!'}
 ];
 
-// Real MP3 recordings replace device-dependent Hebrew text-to-speech.
-// The files are two audio sprites with exact word/phrase boundaries.
+// Luli's recorded Hebrew narration (no dependence on the device's Hebrew TTS).
+// Every word/phrase is its own short MP3 (audio/luli/w###.mp3, p###.mp3), cut at real
+// silences in the original recordings. A message is played clip after clip on ONE reusable
+// <audio> element, each clip from its first to its last sample, and onFinish fires only on
+// the real 'ended' of the last clip. No seeking inside long files, no fixed trimming.
+// If a clip cannot be loaded, the original sprites (audio/luli-*.mp3) are used as a fallback
+// with the same, corrected cut points.
 const recordedManifest=window.LULI_RECORDED||null;
-const recordedPlayers={};
-// If the parent later adds two MP3 files to /audio/, use permanent same-site copies.
-// Until then, the freshly generated fal media URLs provide the recordings.
-if(recordedManifest && typeof fetch==='function'){
- for(const [sheet,spec] of Object.entries(recordedManifest)){
-  const local='./audio/luli-'+sheet+'.mp3';
-  fetch(local,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)spec.url=local}).catch(()=>{});
- }
-}
-let recordedGeneration=0, recordedTimer=null;
+let recordedGeneration=0, recordedTimer=null, recordedLoadTimer=null;
 let lastRecordedStats={total:0,matched:0,unknown:[]};
-function recordingText(t){return String(t||'').normalize('NFC').replace(/[^\u0591-\u05EA]+/g,' ').trim().replace(/\s+/g,' ')}
-function plainRecordingText(t){return recordingText(t).replace(/[\u0591-\u05C7]/g,'')}
+function recordingText(t){return String(t||'').normalize('NFC').replace(/[^֑-ת]+/g,' ').trim().replace(/\s+/g,' ')}
+function plainRecordingText(t){return recordingText(t).replace(/[֑-ׇ]/g,'')}
 const recordedEntries=[];
 if(recordedManifest){
  for(const [sheet,spec] of Object.entries(recordedManifest)){
   const a=spec.starts.split('.').map(v=>parseInt(v,36)/100),b=spec.ends.split('.').map(v=>parseInt(v,36)/100);
+  const d=spec.durs?spec.durs.split('.').map(v=>parseInt(v,36)/100):null;
   for(let i=0;i<spec.items.length;i++){
    const key=recordingText(spec.items[i]);
-   recordedEntries.push({sheet,key,plain:plainRecordingText(key),words:key.split(' '),start:a[i],end:b[i]});
+   recordedEntries.push({sheet,key,plain:plainRecordingText(key),words:key.split(' '),start:a[i],end:b[i],
+    clip:spec.clip?spec.clip+String(i).padStart(3,'0')+'.mp3':null,dur:d?d[i]:Math.max(.2,b[i]-a[i])});
   }
  }
  recordedEntries.sort((a,b)=>b.words.length-a.words.length||b.key.length-a.key.length);
@@ -286,7 +284,7 @@ function findRecordedSegments(message){
    if(direct||fuzzy){found=v;break}
   }
   if(!found && raw[i]?.startsWith('ו') && raw[i].length>2){
-   // Hebrew conjunction before a spoken word (e.g. וּבּוּבָּה).
+   // Hebrew conjunction before a spoken word (e.g. וּבּוּבָּה).
    found=recordedEntries.find(v=>v.words.length===1 && v.plain===raw[i].slice(1));
   }
   if(found){parts.push(found);i+=found.words.length}else{unknown.push(exact[i]);i++}
@@ -294,49 +292,103 @@ function findRecordedSegments(message){
  lastRecordedStats={total:exact.length,matched:exact.length-unknown.length,unknown};
  return parts;
 }
-function getRecordedPlayer(sheet){
- if(recordedPlayers[sheet])return recordedPlayers[sheet];
+// Clips are fetched once and kept as in-memory blob URLs: instant start, no range requests,
+// and they keep working offline once fetched (the service worker caches them as well).
+const clipCache=new Map();
+function clipSource(part){
+ if(!part.clip)return Promise.reject(Error('no clip'));
+ if(!clipCache.has(part.clip)){
+  const p=fetch(part.clip).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.blob()}).then(b=>URL.createObjectURL(b));
+  p.catch(()=>clipCache.delete(part.clip));
+  clipCache.set(part.clip,p);
+ }
+ return clipCache.get(part.clip);
+}
+let clipsWarmed=false;
+function warmAllClips(){
+ if(clipsWarmed||!recordedEntries.length)return;clipsWarmed=true;
+ const queue=recordedEntries.filter(e=>e.clip).slice();
+ const worker=()=>{const e=queue.shift();if(!e)return;clipSource(e).catch(()=>{}).finally(()=>setTimeout(worker,30))};
+ for(let i=0;i<3;i++)worker();
+}
+// One voice element, unlocked by the first tap (iOS/Android allow it to play later on).
+const voicePlayer=typeof Audio==='function'?new Audio():null;
+if(voicePlayer){voicePlayer.preload='auto';voicePlayer.volume=1;}
+let voiceUnlocked=false;
+function unlockVoice(){
+ if(!voicePlayer||voiceUnlocked)return;voiceUnlocked=true;
+ try{voicePlayer.src='./audio/luli/silence.mp3';const p=voicePlayer.play();if(p&&p.catch)p.catch(()=>{voiceUnlocked=false})}catch(_){voiceUnlocked=false}
+}
+const spritePlayers={};
+function getSpritePlayer(sheet){
+ if(spritePlayers[sheet])return spritePlayers[sheet];
  const spec=recordedManifest?.[sheet];if(!spec)return null;
  const el=new Audio();el.src=spec.url;el.preload='auto';el.volume=1;
- recordedPlayers[sheet]=el;return el;
+ spritePlayers[sheet]=el;return el;
 }
 function stopRecorded(){
- recordedGeneration++;clearTimeout(recordedTimer);recordedTimer=null;
- for(const player of Object.values(recordedPlayers)){try{player.pause()}catch(_){}}
+ recordedGeneration++;clearTimeout(recordedTimer);clearTimeout(recordedLoadTimer);recordedTimer=null;
+ if(voicePlayer){voicePlayer.onended=null;voicePlayer.onerror=null;voicePlayer.onplaying=null;try{voicePlayer.pause()}catch(_){}}
+ for(const player of Object.values(spritePlayers)){try{player.pause()}catch(_){}}
+}
+function reportPlayFailure(first){
+ soundState='recorded-error';soundError='הדפדפן לא הצליח לנגן הקלטה';
+ if(first)toast('לא הצלחנו להשמיע את ההקלטה. בדקו שהקול פועל ולחצו שוב על הרמקול.');
 }
 function playRecorded(parts,onFinish){
- stopRecorded();const gen=recordedGeneration;let index=0,done=false;
- const finish=()=>{if(done||gen!==recordedGeneration)return;done=true;clearTimeout(recordedTimer);onFinish?.()};
+ stopRecorded();const gen=recordedGeneration;let done=false;
+ const finish=()=>{if(done||gen!==recordedGeneration)return;done=true;clearTimeout(recordedTimer);clearTimeout(recordedLoadTimer);onFinish?.()};
+ if(!parts.length||!voicePlayer){finish();return}
+ // Loading guard only: if the clips cannot even be fetched, fall back to the sprites.
+ recordedLoadTimer=setTimeout(()=>{if(gen===recordedGeneration&&!done)playSprite(parts,finish,gen)},8000);
+ Promise.all(parts.map(clipSource)).then(urls=>{
+  if(gen!==recordedGeneration||done)return;
+  clearTimeout(recordedLoadTimer);
+  let i=0;
+  const next=()=>{
+   if(gen!==recordedGeneration)return;
+   if(i>=urls.length){soundState='recorded';soundError='';finish();return}
+   const part=parts[i],src=urls[i],first=i===0;i++;
+   let moved=false;
+   const advance=()=>{if(moved||gen!==recordedGeneration)return;moved=true;clearTimeout(recordedTimer);voicePlayer.onended=null;voicePlayer.onerror=null;voicePlayer.onplaying=null;next()};
+   voicePlayer.onended=advance;
+   voicePlayer.onerror=()=>{reportPlayFailure(first);advance()};
+   // Safety net only for a stalled element: starts once audio is actually playing and allows
+   // the full clip plus a generous margin, so it can never cut a word short.
+   voicePlayer.onplaying=()=>{clearTimeout(recordedTimer);recordedTimer=setTimeout(advance,(part.dur+1.6)*1000)};
+   clearTimeout(recordedTimer);recordedTimer=setTimeout(advance,(part.dur+6)*1000);
+   voicePlayer.src=src;
+   const p=voicePlayer.play();
+   if(p&&p.catch)p.catch(err=>{if(gen!==recordedGeneration||err?.name==='AbortError')return;reportPlayFailure(first);advance()});
+  };
+  next();
+ }).catch(()=>{if(gen===recordedGeneration&&!done){clearTimeout(recordedLoadTimer);playSprite(parts,finish,gen)}});
+}
+// Fallback: play from the original long recordings with the corrected cut points (no trimming).
+function playSprite(parts,finish,gen){
+ let index=0;
  const next=()=>{
   if(gen!==recordedGeneration)return;
-  if(index>=parts.length){soundState='recorded';soundError='';finish();return}
-  const part=parts[index++],player=getRecordedPlayer(part.sheet);
+  if(index>=parts.length){finish();return}
+  const part=parts[index++],player=getSpritePlayer(part.sheet);
   if(!player){finish();return}
-  let segmentDone=false;let poll=null;
-  const endSegment=()=>{
-   if(segmentDone||gen!==recordedGeneration)return;
-   segmentDone=true;clearInterval(poll);clearTimeout(recordedTimer);player.pause();next();
-  };
+  let segmentDone=false,poll=null;
+  const endSegment=()=>{if(segmentDone||gen!==recordedGeneration)return;segmentDone=true;clearInterval(poll);clearTimeout(recordedTimer);player.pause();next()};
   const start=()=>{
    if(gen!==recordedGeneration)return;
-   const begin=Math.max(0,part.start+.01),end=Math.max(begin+.12,part.end-.06);
-   try{player.pause();player.currentTime=begin;}catch(_){endSegment();return}
-   const result=player.play();
-   const monitor=()=>{
-    if(gen!==recordedGeneration){clearInterval(poll);return}
-    if(player.currentTime>=end){endSegment()}
+   const begin=Math.max(0,part.start),end=part.end;
+   try{player.pause();player.currentTime=begin}catch(_){endSegment();return}
+   const go=()=>{
+    if(gen!==recordedGeneration)return;
+    const result=player.play();
+    poll=setInterval(()=>{if(gen!==recordedGeneration){clearInterval(poll);return}if(player.currentTime>=end)endSegment()},20);
+    recordedTimer=setTimeout(endSegment,(end-begin+2.5)*1000);
+    if(result?.catch)result.catch(()=>{reportPlayFailure(index===1);endSegment()});
    };
-   poll=setInterval(monitor,45);
-   recordedTimer=setTimeout(endSegment,Math.max(900,(end-begin+1.8)*1000));
-   if(result?.catch)result.catch(()=>{soundState='recorded-error';soundError='הדפדפן לא הצליח לנגן הקלטה';if(index===1)toast('לא הצלחנו להשמיע את ההקלטה. בדקו חיבור לאינטרנט ולחצו שוב על הרמקול.');endSegment()});
+   if(player.seeking)player.addEventListener('seeked',go,{once:true});else go();
   };
   if(player.readyState>=1)start();
-  else{
-   const onMeta=()=>{player.removeEventListener('loadedmetadata',onMeta);start()};
-   player.addEventListener('loadedmetadata',onMeta,{once:true});
-   player.load();
-   recordedTimer=setTimeout(()=>{player.removeEventListener('loadedmetadata',onMeta);endSegment()},7000);
-  }
+  else{player.addEventListener('loadedmetadata',start,{once:true});player.load();recordedTimer=setTimeout(endSegment,8000)}
  };
  next();
 }
@@ -354,17 +406,32 @@ if(voiceAvailable()){
 }
 // Called synchronously from an actual tap to satisfy mobile audio activation.
 function activateAudio(){
- soundActivated=true;
+ soundActivated=true;unlockVoice();setTimeout(warmAllClips,400);
  try{
   const AC=window.AudioContext||window.webkitAudioContext;
   if(AC){audioCtx=audioCtx||new AC();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});}
  }catch(_){/*visual feedback still works*/}
  refreshVoices();
 }
-function stopSpeech(){stopRecorded();speechToken++;clearTimeout(speechFallbackTimer);activeUtterance=null;try{if(voiceAvailable())speechSynthesis.cancel()}catch(e){}}
-function speak(message,onFinish){
+function stopSpeech(){stopRecorded();speechToken++;speakingPrompt=false;pendingPolite=null;clearTimeout(speechFallbackTimer);activeUtterance=null;try{if(voiceAvailable())speechSynthesis.cancel()}catch(e){}}
+// opts.prompt: this is the question/instruction.
+// opts.polite: short feedback (try again / next letter) that must NOT cut the question off:
+// if the question is still being read, the feedback is queued and spoken right after it.
+let speakingPrompt=false, pendingPolite=null;
+function speak(message,onFinish,opts={}){
+ if(opts.polite&&speakingPrompt){pendingPolite={message,onFinish};return true}
  const token=++speechToken;
  stopRecorded();clearTimeout(speechFallbackTimer);
+ pendingPolite=opts.polite?pendingPolite:null;
+ speakingPrompt=!!opts.prompt;
+ const userFinish=onFinish;
+ onFinish=()=>{
+  if(token!==speechToken)return;
+  speakingPrompt=false;
+  const queued=pendingPolite;pendingPolite=null;
+  userFinish?.();
+  if(queued)speak(queued.message,queued.onFinish);
+ };
  if(!data?.sound||data.narration===false){onFinish?.();return false}
  if(recordedManifest){
   const parts=findRecordedSegments(message);
@@ -416,8 +483,10 @@ function advanceAfterPraise(message,oldGame,minimumDisplayMs=1800){
   const wait=Math.max(320,minimumDisplayMs-(Date.now()-startAt));
   nextStepTimer=setTimeout(()=>{if(screen==='play'&&game===oldGame)nextQuestion()},wait);
  };
+ if(oldGame)oldGame.advance=advance;
  clearTimeout(nextStepTimer);
- nextStepTimer=setTimeout(advance,9000);
+ // Last-resort safety only (e.g. audio stuck); normally the real end of the narration advances.
+ nextStepTimer=setTimeout(advance,30000);
  speak(message,advance);
 }
 function toast(msg){const old=document.querySelector('.toast');if(old)old.remove();const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=msg;document.body.append(e);clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.remove(),3200)}
@@ -669,7 +738,7 @@ function nextQuestion(){
   if(opts.length<stageOptions(4))opts.push(...sample(wordBank.filter(w=>w.spoken!==target.spoken && !seen.has(w.emoji) && w.emoji!==target.emoji),stageOptions(4)-opts.length));
   game.question={target:target.spoken,word:target,options:shuffle(opts),prompt:'מה כתוב? קוראים ובוחרים תמונה.',voicePrompt:'מָה כָּתוּב? קוֹרְאִים וּבוֹחֲרִים אֶת הַתְּמוּנָה הַמַּתְאִימָה.'};
  }
- render();speak(game.question.voicePrompt||game.question.prompt);
+ render();speak(game.question.voicePrompt||game.question.prompt,null,{prompt:true});
 }
 function luliImg(){return game&&game.feedbackKind==='good'?'luli-jump':'luli-wand'}
 function playStars(){const lit=Math.min(3,Math.ceil((game.correct||0)*3/Math.max(1,game.max)));return Array.from({length:3},(_,i)=>`<img src="./art/${i<lit?'star':'star-dim'}.svg" alt="">`).join('')}
@@ -724,7 +793,7 @@ function markWrong(btn){
  if(btn){btn.classList.add('wrong');setTimeout(()=>{if(btn.isConnected)btn.classList.remove('wrong')},550)}
  game.hadWrong=true;record(game.question.target,false);
  const line=sample(retryLines,1)[0];
- showFeedback(line.display,'try',line.spoken);playCue('retry');speak(line.spoken);
+ showFeedback(line.display,'try',line.spoken);playCue('retry');speak(line.spoken,null,{polite:true});
 }
 function answer(value,btn){
  if(!game||game.locked)return;
@@ -754,7 +823,7 @@ function wordChoice(index,btn){
  }else{
    playCue('step');render();
    const message=voiceLines.step;
-   showFeedback('יפה מאוד! עכשיו האות הבאה.','good',message);speak(message);
+   showFeedback('יפה מאוד! עכשיו האות הבאה.','good',message);speak(message,null,{polite:true});
  }
 }
 function readChoice(value,btn){
@@ -790,7 +859,7 @@ if(b.hasAttribute('data-open-world')){clearTimeout(nextStepTimer);stopSpeech();s
 if(b.dataset.nav){nav(b.dataset.nav);return}
 if(b.hasAttribute('data-start-stage')&&b.dataset.startStage){activateAudio();start(b.dataset.startStage);return}
 if(b.dataset.start){activateAudio();start(b.dataset.start);return}
-if(b.hasAttribute('data-repeat')){activateAudio();if(game)speak(game.locked&&game.feedbackVoice?game.feedbackVoice:game.question.voicePrompt);return}
+if(b.hasAttribute('data-repeat')){activateAudio();if(game){const praise=game.locked&&game.feedbackVoice;speak(praise?game.feedbackVoice:game.question.voicePrompt,praise?game.advance:null,{prompt:!praise})}return}
 if(b.hasAttribute('data-hear-choice')){activateAudio();if(game?.question?.options){const w=game.question.options[Number(b.dataset.hearChoice)];if(w)speak(w.word)}return}
 if(b.hasAttribute('data-answer')){activateAudio();answer(b.dataset.answer,b);return}
 if(b.hasAttribute('data-word-choice')){activateAudio();wordChoice(Number(b.dataset.wordChoice),b);return}

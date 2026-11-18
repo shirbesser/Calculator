@@ -4,3 +4,7 @@
   Cache-Control: no-cache
 /sw.js
   Cache-Control: no-cache
+/recorded-manifest.js
+  Cache-Control: no-cache
+/luli.css
+  Cache-Control: no-cache
