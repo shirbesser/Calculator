@@ -1,0 +1,4 @@
+# Local tools, downloaded models, fonts and video work files for the
+# "word behind my head" video effect. Large and machine-specific; not committed.
+*
+!.gitignore
